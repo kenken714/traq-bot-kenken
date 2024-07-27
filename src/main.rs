@@ -26,7 +26,7 @@ async fn main() {
         client_config,
     };
     let router = Router::new().route("/", post(handler)).with_state(app);
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, router).await.unwrap();
 }
