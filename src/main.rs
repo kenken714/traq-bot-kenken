@@ -8,6 +8,7 @@ use traq_bot_http::{Event, RequestParser};
 #[tokio::main]
 async fn main() {
     let verification_token = env::var("VERIFICATION_TOKEN").unwrap();
+    let bot_access_token = env::var("BOT_ACCESS_TOKEN").unwrap();
     let parser = RequestParser::new(&verification_token);
     let app = Router::new().route("/", post(handler)).with_state(parser);
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
