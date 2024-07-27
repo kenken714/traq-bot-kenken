@@ -1,10 +1,10 @@
 use std::{env, net::SocketAddr};
 
 use axum::{body::Bytes, extract::State, routing::post, Router};
-use http::{HeaderMap, StatusCode};
+use http::{request, HeaderMap, StatusCode};
 use tokio::net::TcpListener;
 use traq::apis::configuration::Configuration;
-use traq_bot_http::{Event, RequestParser};
+use traq_bot_http::{payloads, Event, RequestParser};
 
 #[derive(Clone)]
 struct App {
@@ -40,12 +40,31 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
             );
             StatusCode::NO_CONTENT
         }
+        Ok(Event::MessageCreated(payload)) => {
+            use traq::apis::message_api::post_message;
+            let channel_id = payload.message.channel_id;
+            let user = payload.message.user;
+            println!(
+                "{}さんにチャンネルID : {} で返答",
+                user.display_name, channel_id
+            );
+            let request = traq::models::PostMessageRequest {
+                content: format!("@{} おいす～！", user.name).to_string(),
+                embed: None,
+            };
+            let res = post_message(&app.client_config, &channel_id, Some(request)).await;
+            if let Err(e) = res {
+                eprintln!("Error: {e}");
+                return StatusCode::INTERNAL_SERVER_ERROR;
+            }
+            StatusCode::NO_CONTENT
+        }
         Ok(Event::DirectMessageCreated(payload)) => {
             use traq::apis::message_api::post_direct_message;
             let user = payload.message.user;
             println!("{}さんにDMで返答", user.display_name);
             let request = traq::models::PostMessageRequest {
-                content: "おいす～！".to_string(),
+                content: format!("@{} おいす～！", user.name).to_string(),
                 embed: None,
             };
             let res = post_direct_message(&app.client_config, &user.id, Some(request)).await;
