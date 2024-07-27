@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+axum = "0.7.5"
+http = "1.1.0"
+tokio = "1.39.2"
+traq-bot-http = "0.9.0"
