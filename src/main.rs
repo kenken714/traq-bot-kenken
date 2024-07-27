@@ -34,13 +34,6 @@ async fn main() {
 async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> StatusCode {
     match app.request_parser.parse(headers.iter(), &body) {
         Ok(Event::MessageCreated(payload)) => {
-            print!(
-                "{}さんがメッセージを投稿しました。\n内容: {}\n",
-                payload.message.user.display_name, payload.message.text
-            );
-            StatusCode::NO_CONTENT
-        }
-        Ok(Event::MessageCreated(payload)) => {
             use traq::apis::message_api::post_message;
             let channel_id = payload.message.channel_id;
             let user = payload.message.user;
