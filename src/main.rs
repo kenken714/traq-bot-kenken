@@ -1,10 +1,10 @@
 use std::{env, net::SocketAddr};
 
 use axum::{body::Bytes, extract::State, routing::post, Router};
-use http::{request, HeaderMap, StatusCode};
+use http::{HeaderMap, StatusCode};
 use tokio::net::TcpListener;
 use traq::apis::configuration::Configuration;
-use traq_bot_http::{payloads, Event, RequestParser};
+use traq_bot_http::{Event, RequestParser};
 
 #[derive(Clone)]
 struct App {
