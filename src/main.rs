@@ -43,7 +43,7 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
             );
             let request = traq::models::PostMessageRequest {
                 content: format!("@{} おいす～！", user.name).to_string(),
-                embed: None,
+                embed: Some(true),
             };
             let res = post_message(&app.client_config, &channel_id, Some(request)).await;
             if let Err(e) = res {
@@ -58,7 +58,7 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
             println!("{}さんにDMで返答", user.display_name);
             let request = traq::models::PostMessageRequest {
                 content: format!("@{} おいす～！", user.name).to_string(),
-                embed: None,
+                embed: Some(true),
             };
             let res = post_direct_message(&app.client_config, &user.id, Some(request)).await;
             if let Err(e) = res {
