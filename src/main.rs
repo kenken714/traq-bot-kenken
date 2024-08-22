@@ -1,4 +1,4 @@
-use std::{env, net::SocketAddr};
+use std::{env, fmt::format, net::SocketAddr};
 
 use axum::{body::Bytes, extract::State, routing::post, Router};
 use http::{HeaderMap, StatusCode};
@@ -43,8 +43,13 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                 "{}さんにチャンネルID : {} で返答",
                 user.display_name, channel_id
             );
+            let reply_content = if payload.message.plain_text.contains("homeru") {
+                format!("えらい～～～～！！！！！！！!").to_string()
+            } else {
+                format!("@{} おいす～！", user.name).to_string()
+            };
             let request = traq::models::PostMessageRequest {
-                content: format!("@{} おいす～！", user.name).to_string(),
+                content: reply_content,
                 embed: Some(true),
             };
             let res = post_message(&app.client_config, &channel_id, Some(request)).await;
@@ -58,8 +63,13 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
             use traq::apis::message_api::post_direct_message;
             let user = payload.message.user;
             println!("{}さんにDMで返答", user.display_name);
+            let reply_content = if payload.message.plain_text.contains("homeru") {
+                format!("えらい～～～～！！！！！！！!").to_string()
+            } else {
+                format!("@{} おいす～！", user.name).to_string()
+            };
             let request = traq::models::PostMessageRequest {
-                content: format!("@{} おいす～！", user.name).to_string(),
+                content: reply_content,
                 embed: Some(true),
             };
             let res = post_direct_message(&app.client_config, &user.id, Some(request)).await;
