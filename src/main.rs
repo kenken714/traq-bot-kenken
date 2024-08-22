@@ -6,7 +6,7 @@ use tokio::net::TcpListener;
 use traq::apis::configuration::Configuration;
 use traq_bot_http::{Event, RequestParser};
 
-mod akinator;
+//mod akinator;
 
 #[derive(Clone)]
 struct App {
