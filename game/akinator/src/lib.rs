@@ -32,7 +32,7 @@ impl Language {
 
 #[derive(Serialize_repr, Clone, Copy)]
 #[repr(u8)]
-enum AkinatorProposition {
+pub enum AkinatorProposition {
     Yes = 0,
     No = 1,
     DontKnow = 2,
@@ -41,7 +41,7 @@ enum AkinatorProposition {
 }
 
 #[derive(Clone, Copy)]
-enum AkinatorGameTheme {
+pub enum AkinatorGameTheme {
     Character,
     Animal,
 }
@@ -55,23 +55,29 @@ impl AkinatorGameTheme {
     }
 }
 
-enum AkinatorState {
+pub enum AkinatorState {
     Question(AkinatorQuestion),
     Guess(AkinatorGuess),
 }
 
-struct AkinatorQuestion {
-    question: String,
-    step: i32,
-    progression: f32,
-    akitude: reqwest::Url,
+pub struct AkinatorQuestion {
+    pub question: String,
+    pub step: i32,
+    pub progression: f32,
+    pub akitude: reqwest::Url,
 }
 
-struct AkinatorGuess {
-    name: String,
-    description: String,
-    image: reqwest::Url,
+pub struct AkinatorGuess {
+    pub name: String,
+    pub description: String,
+    pub image: reqwest::Url,
 }
+
+pub struct Akinator {
+    params: AkinatorParams,
+    session: Option<AkinatorSession>,
+}
+
 struct AkinatorParams {
     step: i32,
     progression: f32,
@@ -102,11 +108,6 @@ impl AkinatorParams {
 struct AkinatorSession {
     session: String,
     signature: String,
-}
-
-struct Akinator {
-    params: AkinatorParams,
-    session: Option<AkinatorSession>,
 }
 
 #[derive(Serialize)]
@@ -272,51 +273,48 @@ impl Akinator {
     }
 
     fn update_state(&mut self, response: AkinatorResponse) -> Result<AkinatorState, AkinatorError> {
-        match response.id_base_proposition {
-            // 解答された場合
-            Some(_) => {
-                self.params.step_last_proposition = Some(self.params.step);
+        let is_guessed = response.id_base_proposition.is_some();
+        // 解答された場合
+        if is_guessed {
+            self.params.step_last_proposition = Some(self.params.step);
 
-                Ok(AkinatorState::Guess(AkinatorGuess {
-                    name: response
-                        .name_proposition
-                        .ok_or(AkinatorError::InvalidResponse)?,
-                    description: response
-                        .description_proposition
-                        .ok_or(AkinatorError::InvalidResponse)?,
-                    image: reqwest::Url::parse(
-                        &response.photo.ok_or(AkinatorError::InvalidResponse)?,
-                    )
+            Ok(AkinatorState::Guess(AkinatorGuess {
+                name: response
+                    .name_proposition
+                    .ok_or(AkinatorError::InvalidResponse)?,
+                description: response
+                    .description_proposition
+                    .ok_or(AkinatorError::InvalidResponse)?,
+                image: reqwest::Url::parse(&response.photo.ok_or(AkinatorError::InvalidResponse)?)
                     .map_err(|_| AkinatorError::InvalidResponse)?,
-                }))
-            }
-            // 質問された場合
-            None => {
-                let step: i32 = response
-                    .step
-                    .ok_or(AkinatorError::InvalidResponse)?
-                    .parse()
-                    .map_err(|_| AkinatorError::InvalidResponse)?;
-                let progression: f32 = response
-                    .progression
-                    .ok_or(AkinatorError::InvalidResponse)?
-                    .parse()
-                    .map_err(|_| AkinatorError::InvalidResponse)?;
+            }))
+        }
+        // 質問された場合
+        else {
+            let step: i32 = response
+                .step
+                .ok_or(AkinatorError::InvalidResponse)?
+                .parse()
+                .map_err(|_| AkinatorError::InvalidResponse)?;
+            let progression: f32 = response
+                .progression
+                .ok_or(AkinatorError::InvalidResponse)?
+                .parse()
+                .map_err(|_| AkinatorError::InvalidResponse)?;
 
-                self.params.step = step;
-                self.params.progression = progression;
+            self.params.step = step;
+            self.params.progression = progression;
 
-                Ok(AkinatorState::Question(AkinatorQuestion {
-                    question: response.question.ok_or(AkinatorError::InvalidResponse)?,
-                    step,
-                    progression,
-                    akitude: reqwest::Url::parse(&format!(
-                        "{}/assets/img/akitudes_670x1096/{}",
-                        self.params.url, response.akitude
-                    ))
-                    .map_err(|_| AkinatorError::InvalidResponse)?,
-                }))
-            }
+            Ok(AkinatorState::Question(AkinatorQuestion {
+                question: response.question.ok_or(AkinatorError::InvalidResponse)?,
+                step,
+                progression,
+                akitude: reqwest::Url::parse(&format!(
+                    "{}/assets/img/akitudes_670x1096/{}",
+                    self.params.url, response.akitude
+                ))
+                .map_err(|_| AkinatorError::InvalidResponse)?,
+            }))
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 pub enum AkinatorError {
     SessionNotFound,
@@ -19,5 +19,11 @@ impl Debug for AkinatorError {
             AkinatorError::UnexpectedError => write!(f, "Unexpected error"),
             AkinatorError::CannotBackAnyMore => write!(f, "Cannot back any more"),
         }
+    }
+}
+
+impl Display for AkinatorError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
     }
 }
