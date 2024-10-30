@@ -30,7 +30,7 @@ async fn main() -> anyhow::Result<()> {
         request_parser,
         client_config,
     };
-    let infra = repository::Repository::connect().await?;
+    //let infra = repository::Repository::connect().await?;
 
     let router = Router::new().route("/", post(handler)).with_state(app);
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
