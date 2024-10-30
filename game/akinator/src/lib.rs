@@ -267,7 +267,9 @@ impl Akinator {
             signature: session.signature.clone(),
         };
 
-        let res = self.send_ingame_request("back", &back_request).await?;
+        let res = self
+            .send_ingame_request("cancel_answer", &back_request)
+            .await?;
         self.update_state(res)
     }
 
