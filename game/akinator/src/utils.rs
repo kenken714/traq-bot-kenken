@@ -2,7 +2,7 @@ use super::{AkinatorError, AkinatorSession};
 use regex::Regex;
 
 //responseからsession情報を取り出す
-pub async fn session_from_body(body: &str) -> Result<AkinatorSession, AkinatorError> {
+pub(super) async fn session_from_body(body: &str) -> Result<AkinatorSession, AkinatorError> {
     let session_regex: Regex = Regex::new(r#"session:\s*'(.+)'"#).unwrap();
     let signature_regex: Regex = Regex::new(r#"signature:\s*'(.+)'"#).unwrap();
 
@@ -26,7 +26,7 @@ pub async fn session_from_body(body: &str) -> Result<AkinatorSession, AkinatorEr
     })
 }
 
-pub async fn get_question_from_body(body: &str) -> Result<String, AkinatorError> {
+pub(super) async fn get_question_from_body(body: &str) -> Result<String, AkinatorError> {
     let question_regex: Regex =
         Regex::new(r#"<p class=\"question-text\" id=\"question-label\">\s*(.+)\s*</p>"#).unwrap();
     let question = question_regex

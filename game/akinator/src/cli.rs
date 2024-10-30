@@ -1,11 +1,10 @@
 use super::{Akinator, AkinatorError, AkinatorResponse};
-use axum::extract::path;
 use reqwest::Response;
 use serde::Serialize;
 
 impl Akinator {
     //Akinatorにリクエストを送信
-    pub async fn send_request(
+    pub(super) async fn send_request(
         &self,
         path: &str,
         body: &impl Serialize,
@@ -24,7 +23,7 @@ impl Akinator {
         }
     }
 
-    pub async fn send_ingame_request(
+    pub(super) async fn send_ingame_request(
         &self,
         path: &str,
         body: &impl Serialize,

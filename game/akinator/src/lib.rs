@@ -47,7 +47,7 @@ pub enum AkinatorGameTheme {
 }
 
 impl AkinatorGameTheme {
-    fn to_sid(&self) -> i32 {
+    fn to_sid(self) -> i32 {
         match self {
             Self::Character => 1,
             Self::Animal => 14,
@@ -152,7 +152,6 @@ struct AkinatorResponse {
     name_proposition: Option<String>,
     description_proposition: Option<String>,
     photo: Option<String>,
-    guess: Option<String>,
 }
 
 impl Akinator {

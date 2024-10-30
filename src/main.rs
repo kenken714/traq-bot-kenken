@@ -51,7 +51,7 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                 user.display_name, channel_id
             );
             let reply_content = if payload.message.plain_text.contains("homeru") {
-                format!("えらい～～～～！！！！！！！!").to_string()
+                format!("えらい～～～～！！！！！！！").to_string()
             } else if payload.message.plain_text.contains("aki") {
                 let res = akinator::Akinator::new(akinator::AkinatorGameTheme::Character)
                     .start()
