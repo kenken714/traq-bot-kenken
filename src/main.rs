@@ -58,10 +58,10 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                     .await;
                 let reply_comment = match res {
                     Ok(akinator::AkinatorState::Question(question)) => {
-                        let intro = "## Akinator\n###やあ、私はアキネイターです:doya-nya.ex-large:\n有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ".to_string();
+                        let intro = "## Akinator\n### やあ、私はアキネイターです:doya-nya.ex-large:\n有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ".to_string();
 
                         format!(
-                            "{}\n\n進捗度: {}\n\n質問{}: {}\n",
+                            "{}\n\n進捗度: {}\n\n#### 質問 {}: {}\n",
                             intro, question.progression, question.step, question.question
                         )
                     }
