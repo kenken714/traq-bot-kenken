@@ -1,12 +1,12 @@
-use std::{env, net::SocketAddr};
-
 use axum::{routing::post, Router};
 use http::StatusCode;
+use std::{env, net::SocketAddr};
 use tokio::net::TcpListener;
 use traq::apis::configuration::Configuration;
 use traq_bot_http::RequestParser;
 
-mod akinator;
+use akinator;
+
 mod repository;
 mod router;
 

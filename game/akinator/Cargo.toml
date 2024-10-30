@@ -1,0 +1,13 @@
+[package]
+name = "akinator"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+axum.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_repr.workspace = true
+regex.workspace = true
