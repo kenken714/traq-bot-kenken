@@ -1,4 +1,4 @@
-use std::{env, fmt::format, net::SocketAddr};
+use std::{env, net::SocketAddr};
 
 use axum::{body::Bytes, extract::State, routing::post, Router};
 use http::{HeaderMap, StatusCode};
@@ -15,8 +15,8 @@ struct App {
 }
 #[tokio::main]
 async fn main() {
-    let verification_token = env::var("VERIFICATION_TOKEN").unwrap();
-    let bot_access_token = env::var("BOT_ACCESS_TOKEN").unwrap();
+    let verification_token = env::var("VERIFICATION_TOKEN").expect("VERIFICATION_TOKEN is not set");
+    let bot_access_token = env::var("BOT_ACCESS_TOKEN").expect("BOT_ACCESS_TOKEN is not set");
 
     let request_parser = RequestParser::new(&verification_token);
     let client_config = Configuration {
@@ -44,9 +44,9 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                 user.display_name, channel_id
             );
             let reply_content = if payload.message.plain_text.contains("homeru") {
-                format!("えらい～～～～！！！！！！！!").to_string()
+                String::from("えらい～～～～！！！！！！!!")
             } else {
-                format!("@{} おいす～！", user.name).to_string()
+                format!("@{} おいす～！", user.name)
             };
             let request = traq::models::PostMessageRequest {
                 content: reply_content,
@@ -64,9 +64,9 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
             let user = payload.message.user;
             println!("{}さんにDMで返答", user.display_name);
             let reply_content = if payload.message.plain_text.contains("homeru") {
-                format!("えらい～～～～！！！！！！！!").to_string()
+                String::from("えらい～～～～！！！！！！!!")
             } else {
-                format!("@{} おいす～！", user.name).to_string()
+                format!("@{} おいす～！", user.name)
             };
             let request = traq::models::PostMessageRequest {
                 content: reply_content,
