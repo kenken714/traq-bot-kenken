@@ -1,8 +1,10 @@
 use axum::{body::Bytes, extract::State, routing::post, Router};
 use http::{HeaderMap, StatusCode};
-use std::{env, net::SocketAddr};
+use image::ImageFormat;
+use reqwest::get;
+use std::{env, io::Cursor, net::SocketAddr};
 use tokio::net::TcpListener;
-use traq::apis::configuration::Configuration;
+use traq::apis::{configuration::Configuration, file_api::post_file};
 use traq_bot_http::{Event, RequestParser};
 
 use akinator;
@@ -50,35 +52,52 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                 "{}さんにチャンネルID : {} で返答",
                 user.display_name, channel_id
             );
-            let reply_content = if payload.message.plain_text.contains("homeru") {
-                format!("えらい～～～～！！！！！！！").to_string()
-            } else if payload.message.plain_text.contains("aki") {
+            if payload.message.plain_text.contains("aki") {
                 let res = akinator::Akinator::new(akinator::AkinatorGameTheme::Character)
                     .start()
                     .await;
-                match res {
-                    Ok(akinator::AkinatorState::Question(question)) => question.question,
+                let reply_comment = match res {
+                    Ok(akinator::AkinatorState::Question(question)) => {
+                        let intro = "## Akinator\n###やあ、私はアキネイターです:doya-nya.ex-large:\n有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ".to_string();
+
+                        format!(
+                            "{}\n\n進捗度: {}\n\n質問{}: {}\n",
+                            intro, question.progression, question.step, question.question
+                        )
+                    }
                     Ok(akinator::AkinatorState::Guess(guess)) => {
-                        format!("{} ですか", guess.name)
+                        format!("あなたが思い浮かべたキャラクターは {} ですか？", guess.name)
                     }
-                    Err(e) => {
-                        eprintln!("{e}");
-                        return StatusCode::INTERNAL_SERVER_ERROR;
-                    }
+                    Err(e) => format!("エラー: {e}"),
+                };
+                let request = traq::models::PostMessageRequest {
+                    content: reply_comment,
+                    embed: Some(true),
+                };
+                let res = post_message(&app.client_config, &channel_id, Some(request)).await;
+                if let Err(e) = res {
+                    eprintln!("Error: {e}");
+                    return StatusCode::INTERNAL_SERVER_ERROR;
                 }
+                StatusCode::NO_CONTENT
             } else {
-                format!("@{} おいす～！", user.name).to_string()
-            };
-            let request = traq::models::PostMessageRequest {
-                content: reply_content,
-                embed: Some(true),
-            };
-            let res = post_message(&app.client_config, &channel_id, Some(request)).await;
-            if let Err(e) = res {
-                eprintln!("Error: {e}");
-                return StatusCode::INTERNAL_SERVER_ERROR;
+                let reply_content = if payload.message.plain_text.contains("homeru") {
+                    format!("えらい～～～～！！！！！！！").to_string()
+                } else {
+                    format!("@{} おいす～！", user.name).to_string()
+                };
+                let request = traq::models::PostMessageRequest {
+                    content: reply_content,
+
+                    embed: Some(true),
+                };
+                let res = post_message(&app.client_config, &channel_id, Some(request)).await;
+                if let Err(e) = res {
+                    eprintln!("Error: {e}");
+                    return StatusCode::INTERNAL_SERVER_ERROR;
+                }
+                StatusCode::NO_CONTENT
             }
-            StatusCode::NO_CONTENT
         }
         Ok(Event::DirectMessageCreated(payload)) => {
             use traq::apis::message_api::post_direct_message;
