@@ -1,11 +1,60 @@
-[package]
-name = "traq-bot-kenken"
+[workspace]
+members = [
+    "./.",
+    "./game/*",
+]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
+publish = false
 
-[dependencies]
-axum = "0.7.5"
+[package]
+name = "traq-bot-kenken"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[workspace.dependencies]
+anyhow = "1.0.91"
+async-session = "3.0.0"
+axum = { version = "0.7.5", features = ["macros"] }
 http = "1.1.0"
-tokio = { version = "1.39.2", features = ["rt-multi-thread", "macros"] }
+regex = "1.11.1"
+reqwest = { version = "0.12.9", features = ["json"] }
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+serde_repr = "0.1.19"
+tokio = { version = "1.39.2", features = ["rt-multi-thread", "macros", "full"] }
+tower-http = { version = "0.6.1", features = ["add-extension", "trace", "fs"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "fmt"] }
 traq = "0.1.4"
 traq-bot-http = "0.9.0"
+
+akinator.path = "game/akinator"
+
+[dependencies.sqlx]
+version = "0.7"
+features = ["mysql", "migrate", "chrono", "runtime-tokio", "macros"] 
+
+[dependencies.async-sqlx-session]
+git = "https://github.com/maxcountryman/async-sqlx-session.git"
+default-features = false
+branch = "sqlx-0.7"
+features = ["mysql"]
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+http.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_repr.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+traq.workspace = true
+traq-bot-http.workspace = true
+
+akinator.workspace = true

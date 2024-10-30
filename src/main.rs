@@ -1,20 +1,23 @@
-use std::{env, fmt::format, net::SocketAddr};
-
 use axum::{body::Bytes, extract::State, routing::post, Router};
 use http::{HeaderMap, StatusCode};
+use std::{env, net::SocketAddr};
 use tokio::net::TcpListener;
 use traq::apis::configuration::Configuration;
 use traq_bot_http::{Event, RequestParser};
 
-//mod akinator;
+use akinator;
+
+mod repository;
+mod router;
 
 #[derive(Clone)]
 struct App {
     request_parser: RequestParser,
     client_config: Configuration,
 }
+
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let verification_token = env::var("VERIFICATION_TOKEN").unwrap();
     let bot_access_token = env::var("BOT_ACCESS_TOKEN").unwrap();
 
@@ -27,10 +30,14 @@ async fn main() {
         request_parser,
         client_config,
     };
+    //let infra = repository::Repository::connect().await?;
+
     let router = Router::new().route("/", post(handler)).with_state(app);
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, router).await.unwrap();
+    axum::serve(listener, router).await?;
+
+    Ok(())
 }
 
 async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> StatusCode {
@@ -44,7 +51,21 @@ async fn handler(State(app): State<App>, headers: HeaderMap, body: Bytes) -> Sta
                 user.display_name, channel_id
             );
             let reply_content = if payload.message.plain_text.contains("homeru") {
-                format!("えらい～～～～！！！！！！！!").to_string()
+                format!("えらい～～～～！！！！！！！").to_string()
+            } else if payload.message.plain_text.contains("aki") {
+                let res = akinator::Akinator::new(akinator::AkinatorGameTheme::Character)
+                    .start()
+                    .await;
+                match res {
+                    Ok(akinator::AkinatorState::Question(question)) => question.question,
+                    Ok(akinator::AkinatorState::Guess(guess)) => {
+                        format!("{} ですか", guess.name)
+                    }
+                    Err(e) => {
+                        eprintln!("{e}");
+                        return StatusCode::INTERNAL_SERVER_ERROR;
+                    }
+                }
             } else {
                 format!("@{} おいす～！", user.name).to_string()
             };
