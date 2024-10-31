@@ -5,7 +5,7 @@ use serde_repr::Serialize_repr;
 use error::AkinatorError;
 
 mod cli;
-mod error;
+pub mod error;
 mod utils;
 
 enum Language {

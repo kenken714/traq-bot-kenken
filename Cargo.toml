@@ -60,3 +60,5 @@ traq-bot-http.workspace = true
 image.workspace = true
 
 akinator.workspace = true
+async-session = "3.0.0"
+tracing.workspace = true

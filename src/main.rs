@@ -1,14 +1,19 @@
-use axum::{body::Bytes, extract::State, routing::post, Router};
+use axum::{
+    body::Bytes,
+    extract::State,
+    routing::{post, Route},
+    Router,
+};
 use http::{HeaderMap, StatusCode};
 use image::ImageFormat;
+use repository::Repository;
 use reqwest::get;
-use std::{env, io::Cursor, net::SocketAddr};
+use std::{env, io::Cursor, net::SocketAddr, sync::Arc};
 use tokio::net::TcpListener;
 use traq::apis::{configuration::Configuration, file_api::post_file};
 use traq_bot_http::{Event, RequestParser};
 
-use akinator;
-
+mod bot;
 mod repository;
 mod router;
 
@@ -16,6 +21,13 @@ mod router;
 struct App {
     request_parser: RequestParser,
     client_config: Configuration,
+}
+
+#[derive(Clone)]
+struct AppState {
+    app: App,
+    infra: Arc<Repository>,
+    parser: RequestParser,
 }
 
 #[tokio::main]
@@ -32,9 +44,9 @@ async fn main() -> anyhow::Result<()> {
         request_parser,
         client_config,
     };
-    //let infra = repository::Repository::connect().await?;
+    let infra = repository::Repository::connect().await?;
 
-    let router = Router::new().route("/", post(handler)).with_state(app);
+    let router = router::make_router(&verification_token, app.clone(), Arc::new(infra)).await;
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, router).await?;
