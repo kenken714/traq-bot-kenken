@@ -99,14 +99,17 @@ impl Game for AkinatorGame {
         let last_message = match self.last_message.as_ref() {
             Some(last_message) => last_message.clone(),
             None => {
+                tracing::error!("Last message is not found");
                 return StatusCode::NO_CONTENT;
             }
         };
         if &last_message.message_id != message_id {
+            tracing::error!("Last message does not match");
             return StatusCode::NO_CONTENT;
         }
 
         let stamp = payload.stamps.iter().find(|s| s.count >= 2);
+        tracing::info!("Found stamp on akinator: {:?}", stamp);
         if let Some(stamp) = stamp {
             match self.state {
                 AkinatorGameState::Init => StatusCode::NO_CONTENT,
@@ -330,7 +333,7 @@ impl AkinatorGame {
 
         self.post_stamps(
             app,
-            channel_id,
+            &res.unwrap().id.to_string(),
             vec![
                 YES_STAMP_ID,
                 NO_STAMP_ID,
@@ -360,7 +363,7 @@ impl AkinatorGame {
         match res {
             Err(e) => {
                 tracing::error!("Error: {e}");
-                return StatusCode::INTERNAL_SERVER_ERROR;
+                StatusCode::INTERNAL_SERVER_ERROR
             }
             Ok(res) => {
                 let res_message: AkinatorGameMessage = AkinatorGameMessage {
@@ -368,11 +371,10 @@ impl AkinatorGame {
                     channel_id: channel_id.to_string(),
                 };
                 self.last_message = Some(res_message);
+                self.post_stamps(app, &res.id.to_string(), vec![YES_STAMP_ID, NO_STAMP_ID])
+                    .await
             }
         }
-
-        self.post_stamps(app, channel_id, vec![YES_STAMP_ID, NO_STAMP_ID])
-            .await
     }
 
     async fn post_end_game(&mut self, app: &App, channel_id: &str) -> StatusCode {
@@ -399,13 +401,13 @@ impl AkinatorGame {
     async fn post_stamps(
         &mut self,
         app: &App,
-        channel_id: &str,
+        message_id: &str,
         stamp_ids: Vec<&str>,
     ) -> StatusCode {
         for stamp_id in stamp_ids {
             if let Err(e) = traq::apis::stamp_api::add_message_stamp(
                 &app.client_config,
-                channel_id,
+                message_id,
                 stamp_id,
                 None,
             )
