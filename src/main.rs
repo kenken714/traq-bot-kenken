@@ -37,7 +37,7 @@ async fn main() -> anyhow::Result<()> {
         request_parser,
         client_config,
     };
-    //let infra = repository::Repository::connect().await?;
+    let infra = repository::Repository::connect().await?;
 
     let game_sessions = GameSessionManager::new();
 
