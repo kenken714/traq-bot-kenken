@@ -5,15 +5,16 @@ use traq_bot_http::Event;
 
 use crate::AppState;
 
-mod game;
+pub(crate) mod game;
 mod message;
+mod util;
 
 pub async fn handle_event(
     State(state): State<AppState>,
     headers: HeaderMap,
     body: Bytes,
 ) -> StatusCode {
-    let event = match state.parser.parse(headers.iter(), &body) {
+    let event = match state.app.request_parser.parse(&headers, &body) {
         Ok(event) => event,
         Err(e) => {
             error!("Failed to parse request: {}", e);

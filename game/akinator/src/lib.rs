@@ -86,6 +86,7 @@ struct AkinatorParams {
     language: Language,
     child_mode: bool,
     game_theme: AkinatorGameTheme,
+    miss_count: i32,
 }
 
 impl AkinatorParams {
@@ -102,6 +103,7 @@ impl AkinatorParams {
             step_last_proposition: None,
             child_mode: false,
             game_theme,
+            miss_count: 0,
         }
     }
 }
@@ -241,6 +243,9 @@ impl Akinator {
         let res = self
             .send_ingame_request("exclude", &exclude_request)
             .await?;
+
+        self.params.miss_count += 1;
+
         self.update_state(res)
     }
 
