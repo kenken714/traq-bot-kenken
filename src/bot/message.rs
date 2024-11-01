@@ -26,7 +26,7 @@ pub async fn on_message_created(
 
     if message.plain_text.contains("おいすー") {
         let request = PostMessageRequest {
-            content: format!("@{} おいすー！！！", message.user.id),
+            content: format!("@{} おいすー！！！", message.user.name),
             embed: Some(true),
         };
         let res = post_message(&state.app.client_config, &message.channel_id, Some(request)).await;
