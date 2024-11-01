@@ -1,7 +1,7 @@
 use akinator::{Akinator, AkinatorGameTheme, AkinatorProposition, AkinatorQuestion};
 use axum::async_trait;
 use http::StatusCode;
-use traq::apis::message_api;
+use traq::{apis::message_api, models::Message};
 
 use crate::{App, AppState};
 
@@ -74,15 +74,20 @@ impl Game for AkinatorGame {
         let res = self
             .game_theme_select(&app.app, &payload.message.channel_id)
             .await;
-        if res.is_success() {
-            self.last_message = Some(AkinatorGameMessage {
-                message_id: payload.message.id.to_string(),
-                channel_id: payload.message.channel_id.to_string(),
-            });
-            self.state = AkinatorGameState::ThemeSelect;
+        match res {
+            Ok(message) => {
+                self.last_message = Some(AkinatorGameMessage {
+                    message_id: message.id.to_string(),
+                    channel_id: payload.message.channel_id.to_string(),
+                });
+                self.state = AkinatorGameState::ThemeSelect;
+                StatusCode::NO_CONTENT
+            }
+            Err(e) => {
+                tracing::error!("Error: {e}");
+                e
+            }
         }
-
-        res
     }
 
     async fn on_bot_message_stamps_updated(
@@ -136,15 +141,20 @@ impl Game for AkinatorGame {
         let res = self
             .game_theme_select(&app.app, &payload.message.channel_id)
             .await;
-        if res.is_success() {
-            self.last_message = Some(AkinatorGameMessage {
-                message_id: payload.message.id.to_string(),
-                channel_id: payload.message.channel_id.to_string(),
-            });
-            self.state = AkinatorGameState::ThemeSelect;
+        match res {
+            Ok(message) => {
+                self.last_message = Some(AkinatorGameMessage {
+                    message_id: message.id.to_string(),
+                    channel_id: payload.message.channel_id.to_string(),
+                });
+                self.state = AkinatorGameState::ThemeSelect;
+                StatusCode::NO_CONTENT
+            }
+            Err(e) => {
+                tracing::error!("Error: {e}");
+                e
+            }
         }
-
-        res
     }
 
     async fn destroy(&mut self) -> StatusCode {
@@ -152,7 +162,11 @@ impl Game for AkinatorGame {
     }
 }
 impl AkinatorGame {
-    async fn game_theme_select(&mut self, app: &App, channel_id: &str) -> StatusCode {
+    async fn game_theme_select(
+        &mut self,
+        app: &App,
+        channel_id: &str,
+    ) -> Result<Message, StatusCode> {
         let req_message = "## Akinator\n### やあ、私はアキネイターです:doya-nya.ex-large:\n有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ\n\n#### ゲームのテーマを選んでください。\n#### :viine02.ex-large: : キャラクター\n#### :cat.ex-large: : 動物\n"
     .to_string();
 
@@ -160,22 +174,30 @@ impl AkinatorGame {
             content: req_message,
             embed: Some(true),
         };
-        let res = message_api::post_message(&app.client_config, channel_id, Some(request)).await;
+        let res_post_message =
+            message_api::post_message(&app.client_config, channel_id, Some(request)).await;
 
-        let message = match res {
+        let message = match res_post_message {
             Ok(message) => message,
             Err(e) => {
                 eprintln!("Error: {e}");
-                return StatusCode::INTERNAL_SERVER_ERROR;
+                return Err(StatusCode::INTERNAL_SERVER_ERROR);
             }
         };
 
-        self.post_stamps(
-            app,
-            &message.id.to_string(),
-            vec![CHARA_STAMP_ID, ANIMAL_STAMP_ID],
-        )
-        .await
+        let res_post_stamp = self
+            .post_stamps(
+                app,
+                &message.id.to_string(),
+                vec![CHARA_STAMP_ID, ANIMAL_STAMP_ID],
+            )
+            .await;
+
+        if res_post_stamp.is_success() {
+            Ok(message)
+        } else {
+            Err(res_post_stamp)
+        }
     }
 
     async fn start_game(&mut self, app: &App, channel_id: &str, stamp_id: &str) -> StatusCode {
@@ -183,7 +205,7 @@ impl AkinatorGame {
             CHARA_STAMP_ID => AkinatorGameTheme::Character,
             ANIMAL_STAMP_ID => AkinatorGameTheme::Animal,
             _ => {
-                eprintln!("Invalid stamp_id: {stamp_id}");
+                tracing::error!("Invalid stamp_id: {stamp_id}");
                 return StatusCode::BAD_REQUEST;
             }
         };
