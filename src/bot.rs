@@ -8,7 +8,6 @@ pub(crate) mod game;
 mod message;
 mod util;
 
-#[tracing::instrument]
 pub async fn handle_event(
     State(state): State<AppState>,
     headers: HeaderMap,

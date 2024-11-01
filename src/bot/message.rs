@@ -6,7 +6,6 @@ use traq_bot_http::payloads::{
 
 use super::game;
 
-#[tracing::instrument]
 pub async fn on_message_created(
     state: crate::AppState,
     payload: MessageCreatedPayload,
@@ -43,7 +42,6 @@ pub async fn on_message_created(
     StatusCode::NO_CONTENT
 }
 
-#[tracing::instrument]
 pub async fn on_bot_message_stamps_updated(
     state: crate::AppState,
     payload: BotMessageStampsUpdatedPayload,
@@ -58,7 +56,6 @@ pub async fn on_bot_message_stamps_updated(
     StatusCode::NO_CONTENT
 }
 
-#[tracing::instrument]
 pub async fn on_direct_message_created(
     state: crate::AppState,
     payload: DirectMessageCreatedPayload,

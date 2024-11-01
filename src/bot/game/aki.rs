@@ -153,13 +153,7 @@ impl Game for AkinatorGame {
 }
 impl AkinatorGame {
     async fn game_theme_select(&mut self, app: &App, channel_id: &str) -> StatusCode {
-        let req_message = "## Akinator\n
-        ### やあ、私はアキネイターです:doya-nya.ex-large:\n
-        有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ\n\n
-        #### ゲームのテーマを選んでください。\n
-        #### :one.ex-large: : キャラクター\n
-        #### :two.ex-large: : 動物\n
-        "
+        let req_message = "## Akinator\n### やあ、私はアキネイターです:doya-nya.ex-large:\n有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ\n\n#### ゲームのテーマを選んでください。\n#### :viine02.ex-large: : キャラクター\n#### :cat.ex-large: : 動物\n"
     .to_string();
 
         let request = traq::models::PostMessageRequest {
@@ -299,15 +293,7 @@ impl AkinatorGame {
         channel_id: &str,
     ) -> StatusCode {
         let req_message = format!(
-            "## Akinator\n\n
-        進捗度: {}\n\n
-        #### 質問 {}: {}\n\n
-        #### :one.ex-large: : はい\n
-        #### :two.ex-large: : いいえ\n
-        #### :three.ex-large: : わからない\n
-        #### :four.ex-large: : たぶんそう、部分的にそう\n
-        #### :five.ex-large: : たぶん違う、部分的にちがう\n
-        #### :arrow_backward.ex-large: : 戻る\n",
+            "## Akinator\n\n進捗度: {}\n\n#### 質問 {}: {}\n\n#### :one.ex-large: : はい\n#### :two.ex-large: : いいえ\n#### :three.ex-large: : わからない\n#### :four.ex-large: : たぶんそう、部分的にそう\n#### :five.ex-large: : たぶん違う、部分的にちがう\n#### :arrow_backward.ex-large: : 戻る\n",
             question.progression, question.step, question.question
         );
         let request = traq::models::PostMessageRequest {
@@ -341,11 +327,7 @@ impl AkinatorGame {
         channel_id: &str,
     ) -> StatusCode {
         let req_message = format!(
-            "## Akinator\n\n
-        あなたが思い浮かべたキャラクターは {} ですか？\n\n
-        
-        #### :one.ex-large: : はい\n
-        #### :two.ex-large: : いいえ\n",
+            "## Akinator\n\nあなたが思い浮かべたキャラクターは {} ですか？\n\n#### :one.ex-large: : はい\n#### :two.ex-large: : いいえ\n",
             guess.name
         );
         let request = traq::models::PostMessageRequest {

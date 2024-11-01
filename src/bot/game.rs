@@ -52,7 +52,6 @@ impl GameSessionManager {
         }
     }
 
-    #[tracing::instrument]
     pub fn set_game(&mut self, game: Box<dyn Game>) {
         let expiration = Utc::now() + Duration::minutes(3);
         self.sessions.push(GameSession { game, expiration });
@@ -75,7 +74,7 @@ impl GameSessionManager {
 
         StatusCode::NO_CONTENT
     }
-    #[tracing::instrument]
+
     pub async fn on_direct_message_created(
         &mut self,
         app: &AppState,
