@@ -4,6 +4,7 @@ use sqlx::{
     MySqlPool,
 };
 
+#[derive(Debug)]
 pub struct Repository {
     pool: MySqlPool,
     session_store: MySqlSessionStore,

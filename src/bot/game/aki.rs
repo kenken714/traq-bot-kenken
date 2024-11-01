@@ -153,8 +153,7 @@ impl Game for AkinatorGame {
 }
 impl AkinatorGame {
     async fn game_theme_select(&mut self, app: &App, channel_id: &str) -> StatusCode {
-        let req_message = "
-        ## Akinator\n
+        let req_message = "## Akinator\n
         ### やあ、私はアキネイターです:doya-nya.ex-large:\n
         有名な人物やキャラクターを思い浮かべて。魔人が誰でも当ててみせよう。魔人は何でもお見通しさ\n\n
         #### ゲームのテーマを選んでください。\n

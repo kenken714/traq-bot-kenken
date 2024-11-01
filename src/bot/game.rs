@@ -28,11 +28,19 @@ pub trait Game: Send + Sync {
     async fn destroy(&mut self) -> StatusCode;
 }
 
+impl std::fmt::Debug for dyn Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Game").finish()
+    }
+}
+
+#[derive(Debug)]
 pub struct GameSession {
     game: Box<dyn Game>,
     expiration: DateTime<Utc>,
 }
 
+#[derive(Debug)]
 pub struct GameSessionManager {
     sessions: Vec<GameSession>,
 }
@@ -44,9 +52,14 @@ impl GameSessionManager {
         }
     }
 
+    #[tracing::instrument]
     pub fn set_game(&mut self, game: Box<dyn Game>) {
         let expiration = Utc::now() + Duration::minutes(3);
         self.sessions.push(GameSession { game, expiration });
+        tracing::info!(
+            "Game session set, game: {:?}",
+            self.sessions.last().unwrap().game
+        );
     }
 
     //FIXME: 複数受理するか１つだけ受理するかは要検討
@@ -62,7 +75,7 @@ impl GameSessionManager {
 
         StatusCode::NO_CONTENT
     }
-
+    #[tracing::instrument]
     pub async fn on_direct_message_created(
         &mut self,
         app: &AppState,

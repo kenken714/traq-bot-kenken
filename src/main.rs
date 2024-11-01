@@ -12,13 +12,13 @@ mod bot;
 mod repository;
 mod router;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct App {
     request_parser: RequestParser,
     client_config: Configuration,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct AppState {
     app: App,
     infra: Arc<Repository>,
