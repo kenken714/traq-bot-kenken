@@ -46,6 +46,7 @@ pub async fn on_bot_message_stamps_updated(
     state: crate::AppState,
     payload: BotMessageStampsUpdatedPayload,
 ) -> StatusCode {
+    tracing::info!("Botのメッセージスタンプが更新されました");
     state
         .game_sessions
         .lock()

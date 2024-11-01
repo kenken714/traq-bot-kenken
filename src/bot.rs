@@ -1,6 +1,5 @@
 use axum::{body::Bytes, extract::State};
 use http::{HeaderMap, StatusCode};
-use tracing::error;
 use traq_bot_http::Event;
 
 use crate::AppState;
@@ -17,7 +16,7 @@ pub async fn handle_event(
     let event = match state.app.request_parser.parse(&headers, &body) {
         Ok(event) => event,
         Err(e) => {
-            error!("Failed to parse request: {}", e);
+            tracing::error!("Failed to parse request: {:?}", e);
             return StatusCode::BAD_REQUEST;
         }
     };
