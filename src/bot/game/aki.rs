@@ -245,6 +245,7 @@ impl AkinatorGame {
                 return StatusCode::BAD_REQUEST;
             }
         };
+        tracing::info!("Answering question: {stamp_id}");
         let res = match stamp_id {
             YES_STAMP_ID => akinator.answer(AkinatorProposition::Yes).await,
             NO_STAMP_ID => akinator.answer(AkinatorProposition::No).await,
@@ -257,6 +258,7 @@ impl AkinatorGame {
                 return StatusCode::BAD_REQUEST;
             }
         };
+        tracing::info!("Answered question!");
         match res {
             Ok(akinator::AkinatorState::Question(question)) => {
                 self.state = AkinatorGameState::Question;
