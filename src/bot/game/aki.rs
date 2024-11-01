@@ -78,7 +78,7 @@ impl Game for AkinatorGame {
             Ok(message) => {
                 self.last_message = Some(AkinatorGameMessage {
                     message_id: message.id.to_string(),
-                    channel_id: payload.message.channel_id.to_string(),
+                    channel_id: message.channel_id.to_string(),
                 });
                 self.state = AkinatorGameState::ThemeSelect;
                 StatusCode::NO_CONTENT
@@ -108,11 +108,14 @@ impl Game for AkinatorGame {
             return StatusCode::NO_CONTENT;
         }
 
-        let stamp = payload.stamps.iter().find(|s| s.count >= 2);
+        let stamp = payload.stamps.first();
         tracing::info!("Found stamp on akinator: {:?}", stamp);
         if let Some(stamp) = stamp {
             match self.state {
-                AkinatorGameState::Init => StatusCode::NO_CONTENT,
+                AkinatorGameState::Init => {
+                    tracing::error!("Invalid state");
+                    StatusCode::BAD_REQUEST
+                }
                 AkinatorGameState::ThemeSelect => {
                     self.start_game(&app.app, &last_message.channel_id, &stamp.stamp_id)
                         .await
@@ -326,23 +329,30 @@ impl AkinatorGame {
             embed: Some(true),
         };
         let res = message_api::post_message(&app.client_config, channel_id, Some(request)).await;
+
         if let Err(e) = res {
             tracing::error!("Error: {e}");
-            return StatusCode::INTERNAL_SERVER_ERROR;
+            StatusCode::INTERNAL_SERVER_ERROR
+        } else {
+            let res_message: AkinatorGameMessage = AkinatorGameMessage {
+                message_id: res.unwrap().id.to_string(),
+                channel_id: channel_id.to_string(),
+            };
+            self.last_message = Some(res_message.clone());
+            self.post_stamps(
+                app,
+                res_message.message_id.as_str(),
+                vec![
+                    YES_STAMP_ID,
+                    NO_STAMP_ID,
+                    DONT_KNOW_STAMP_ID,
+                    PROBABLY_STAMP_ID,
+                    PROBABLY_NOT_STAMP_ID,
+                ],
+            )
+            .await;
+            StatusCode::NO_CONTENT
         }
-
-        self.post_stamps(
-            app,
-            &res.unwrap().id.to_string(),
-            vec![
-                YES_STAMP_ID,
-                NO_STAMP_ID,
-                DONT_KNOW_STAMP_ID,
-                PROBABLY_STAMP_ID,
-                PROBABLY_NOT_STAMP_ID,
-            ],
-        )
-        .await
     }
 
     async fn post_guess(
